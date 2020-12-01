@@ -2,7 +2,7 @@
   TCP SYN packets sender & ACK and data receiver with linux raw sockets in c
   Compile:  $ gcc port_scan.c -lpthread -o port_scan
   Run:      $ sudo ./port_scan <IPAddress> <Port>
-  Aldatuko da argumentu bezala ordez fitxategitik irakurtzeko IPak, prozesu bakoitzerako hariak sortuz
+  Aldatuko da argumentu bezala ordez fitxategitik irakurtzeko IP eta portuak, prozesu bakoitzerako hariak sortuz
 */
 
 
