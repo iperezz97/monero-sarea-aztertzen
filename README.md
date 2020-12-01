@@ -1,6 +1,7 @@
 # monero-sarea-aztertzen
 
 lortu_ipport.sh:
+
 Monero sareari konektatuta egonda, 6000 nodoren informazioa lortu; IP eta portua sarrera estandarrean idatzi
 Exekutatu:
 $ sh lortu_ipport > ipport_emaitza 2> errors
