@@ -1,4 +1,8 @@
 #!/bin/sh
+# Script honi process_levin.sh script-etik deitzen zaio, mezuen komandoen zenbakia jakin ahal izateko
+# Argumentu bezala levin goiburukoak komentatuta dituen fitxategia pasa behar zaio (em<id> modukoa)
+# Script honen irteera levin mezuen hasiera (komentatuta) eta komandoen bihurketa (hamartarra) izango da
+# Exekutatzeko: $ sh command_conv.sh <filename>
 
 
 
