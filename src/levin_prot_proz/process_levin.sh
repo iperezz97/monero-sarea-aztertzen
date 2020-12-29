@@ -17,7 +17,7 @@ else
     exit 1
 fi
 
-# Lortu hamasaitarrez fitxategiaren edukia, levin protokoloaren header-ak lortu eta non dauden (byte offset, extended regurlar expression, only matching)
+# Lortu hamasaitarrez fitxategiaren edukia, levin protokoloaren header-ak lortu eta non dauden (byte offset, extended regular expression, only matching)
 #headers=$(hexdump -C $file | cut -d ' ' -f 3-19 | tr -s '\n' ' ' |  grep -bEo "01 21 01 01 01 01 01 01.{0,75}")
 pos=$(hexdump -C $file | cut -d ' ' -f 3-19 | tr -s '\n' ' ' |  grep -bEo "01 21 01 01 01 01 01 01.{0,75}" | cut -d ':' -f 1)
 file2="ir0"
@@ -235,7 +235,7 @@ do
 
 done < $file2
 
-echo "$outp fitxategiaren goiburukoak eta komandoak: \n" 
+#echo "$outp fitxategiaren goiburukoak eta komandoak: \n" 
 
 #cat $outp | grep -P "Signature|Length|Expect Response|Command|Return Code|Ending chars|Flag"
 #cat $outp | grep -P "Signature|Length|Expect Response|Command|Return Code|Ending chars|Flag -A 1 -B 1"
@@ -244,5 +244,5 @@ echo "$outp fitxategiaren goiburukoak eta komandoak: \n"
 # Komandoen zenbakiak bihurtu fitxategien bukaeran, komentatutako goiburukoak ondoren
 sh command_conv.sh $outp > comm_$outp 2> /dev/null
 sed -i 's/Command number: 0//g' comm_$outp
-cat comm_$outp
-echo "\n====================================================================================================================\n\n"
+#cat comm_$outp
+#echo "\n====================================================================================================================\n\n"

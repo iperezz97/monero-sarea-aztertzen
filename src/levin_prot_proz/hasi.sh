@@ -3,7 +3,10 @@
 # $ sh hasi.sh <tcpflow_denb> [<interfazea>]
 # Monero-ko nodoekin dauden komunikazioen trafikoa harrapatu (1. argumentuan adierazitako segundu kopurua)
 # Defektuz tcpflow-k detektatzen duen interfazea ordez beste bat erabili nahi bada adierazi 2. argumentuan interfazearen izena
-# Ondoren process_levin.sh script-ari deitu levin protokoloaren goiburukoak komentatuta ikusteko
+# Ondoren process_levin.sh script-ari deitu levin protokoloaren goiburukoak komentatuta ikusteko em<i> fitxategietan
+# Azken honek command_conv.sh script-a deituko du eta komando zenbakiak hamartarrez ikusi ahalko dira comm_em<i> fitxategietan
+# IP helbideak lortzeko handshake response mezuak aztertuko dira ip_conv.sh script-ean eta ipak fitxategian idatziko dira
+# Azkenik IP helbide horien mundu mailako kokapena lortzeko geoloc.sh script-ari deitzen zaio, iplocs fitxategian 6 modu desberdinetan IP bakoitzaren kokapen-xehetasunak idatziko dituena
 # Prozesua hasteko modu pribilegiatua beharrezkoa da
 # Post-prozesua: $ grep -E "Command number:" comm_em* | cut -d ':' -f 3 | sort | uniq  # Bidali diren komando desberdinak idatzi
 
@@ -25,7 +28,7 @@ fi
 
 ter=0
 
-# Entzuten jarri 18080 portuan (automatikoki fitxategiak sortu <srce@IP:Port>-<dest@IP:Port> formatuarekin
+# Entzuten jarri 18080 portuan (automatikoki fitxategiak sortu <srce@IP:Port>-<dest@IP:Port> formatuarekin)
 if [ $arg -eq 1 ]; # interfazea adierazita
 then
 #    sudo tcpflow -a -i $int port 18080 &
@@ -49,7 +52,6 @@ fi
 sleep $denb
 
 # Denbora hori pasatakoan akatu tcpflow prozesua (SIGKILL)
-
 pid=$(ps -aux | grep "tcpflow" | grep -v "grep" | awk '{print $2}')
 echo "Terminating tcpflow process" # $pid"
 sudo kill -9 $pid
@@ -66,6 +68,15 @@ do
      sh process_levin.sh "$line" $iter
      iter=$((iter+1))
 done < conn_files
+
+# Bidaltzen diren IP helbideak harrapatu eta konektatuta dauden idatzi
+echo "Extracting IPs from data... Output: ipak "
+sh ip_conv.sh > ipak
+cat ipak | sort | uniq > ipeak # Kontserbatu behin soilik (ordenatu soilik horretarako... lehenik erantzunik gabekoak '..' gero 'OK' eta gainera ordena: 255 < 5)
+
+# IP helbideen kokapena geoip tresnarekin lortu
+echo "Getting geolocation of IPs... Output: iplocs "
+sh geoloc.sh ipeak > iplocs
 
 exit 0
 
