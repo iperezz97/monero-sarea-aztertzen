@@ -7,7 +7,7 @@
  * *  - 3. haria: Nodo bakoitzaren koordenatuak lortu eta mapan kokatzen dituen haria (geoip, mapan marraztu)
  * *  - 4. haria: Transakzioak jaso eta nodoekin erlazionatzen dituen haria (recv 2002, mapan marraztu, konexio kopurua?)
 
- * Konpilatu: gcc nagusia.c eskatu1001.c -lpthread -o nagusia
+ * Konpilatu: gcc nagusia.c bzb.c eskatu1001.c konprob1003.c kokatu_mapan.c -lpthread -o nagusia
  * Exekutatu: sudo ./nagusia <IP> <PORT>
  * Lehenengo argumentua hasierako helburuko nodoaren IP helbidea izango da
  * Bigarren argumentua nodoaren portua izango da (zenbaki naturala, ohikoa 18080)
