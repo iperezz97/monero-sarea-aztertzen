@@ -1,0 +1,8 @@
+Creating socket... Destination: 212.83.175.67 18080
+Socket descriptor: 5
+Connected.
+1001 request header sent to: 212.83.175.67	 Packet size: 33 = 21.
+1001 request data sent to:   212.83.175.67	 Packet size: 226 = e2.
+1007 request received (ignore) 			 Packet size: 10 = a.
+1001 response header received 			 Packet size: 33 = 21.
+1001 response data received 			 Packet size: 15149 = 3b2d 		 Stored in '212.83.175.67'
