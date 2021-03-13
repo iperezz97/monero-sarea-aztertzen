@@ -141,12 +141,6 @@ int main(int argc, char *argv[]) {
 
 
 // egiteko
-/*
-void * kokatu_mapan(void *args) {
-//	printf("kokatu_mapan %s exekutatzen...\n", (char *) args);
-	pthread_exit(NULL);
-}
-*/
 void * jaso_transakzioak(void *args) {
 //	printf("jaso_transakzioak %s exekutatzen...\n", (char *) args);
 	pthread_exit(NULL);
