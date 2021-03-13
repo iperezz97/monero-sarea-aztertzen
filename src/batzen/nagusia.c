@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 	//sleep(5);
 	pthread_join(thread1, NULL);
 	pthread_join(thread2, NULL);
-//	pthread_join(thread3, NULL);
+	pthread_join(thread3, NULL);
 	pthread_join(thread4, NULL);
 	//fprintf(log, "\n");
 	//fflush(stdout);
