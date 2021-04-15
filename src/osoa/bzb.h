@@ -1,4 +1,3 @@
-#include <pthread.h>
 // Bilaketa zuhaitz bitarra: datu-egitura nagusia lortutako nodoen informazioa gordetzeko
 struct bzb_ip {
         struct in_addr    nodip; // barnean uint32_t s_addr (nodoaren IP helbidea)
@@ -7,7 +6,7 @@ struct bzb_ip {
         float             lon;   // nodoaren longitudea (mapan kokatzeko)
         float             lat;   // nodoaren longitudea (mapan kokatzeko)
         pthread_mutex_t   lock;  // atomikotasuna bermatzeko mutex-a (ezabatu_elem eta egoera_aldatu metodoetan beharrezkoa)
-	pthread_cond_t	  cond;  // baldintza bat bete arte itxaroteko (wait/signal)
+//	pthread_cond_t	  cond;  // baldintza bat bete arte itxaroteko (wait/signal)
         struct bzb_ip   * left;  // ezkerreko umea (IP txikiagoa duen nodoa)
         struct bzb_ip   * right; // eskuineko umea (IP handiagoa duen nodoa)
 };

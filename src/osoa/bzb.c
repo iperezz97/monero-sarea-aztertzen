@@ -17,7 +17,7 @@ int txertatu_elem(struct in_addr ip, int port) {
 	berria->left = NULL;
         berria->right = NULL;
 	pthread_mutex_init(&(berria->lock), NULL);
-	pthread_cond_init (&(berria->cond), NULL);
+//	pthread_cond_init (&(berria->cond), NULL);
 //      printf("%u eta %u \n", ntohl(uneko->nodip.s_addr), ntohl(berria->nodip.s_addr));
         // ordenatu ntohl-ren emaitzaren arabera...
         while(uneko != NULL) {
@@ -37,12 +37,9 @@ int txertatu_elem(struct in_addr ip, int port) {
                         }
                         else uneko = uneko->right;
                 }
-		else { // ip berdinak diren kasuan
-			break;  // bilaketa bukatu
-		}
-		// Nodoa IP-arekin identifikatu, (edo ip eta portua?)...... ez dut beharrezkoa ikusten
-		// IP-ak berdinak diren kasuetan... ez gorde(?) (bi monero nodo IP bakarrarekin?)
-/*		else if(uneko->port > berria->port) {
+		// Nodoa IP-arekin eta portuarekin identifikatu
+		// IP-ak berdinak diren kasuetan...  gorde (bi monero nodo IP bakarrarekin portu desberdinarekin)
+		else if(uneko->port > berria->port) {
 			if(uneko->left == NULL) {
                                 uneko->left = berria;
                                 return 0;
@@ -56,7 +53,7 @@ int txertatu_elem(struct in_addr ip, int port) {
                         }
                         else uneko = uneko->right;
 		}
-*/
+		else 	break; // ip eta portu bera aurkitzean bukatu txertaketa..
         }
         return 1;
 

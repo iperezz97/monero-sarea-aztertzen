@@ -9,6 +9,8 @@
 #include <linux/kernel.h>
 #include <poll.h>
 #include <fcntl.h>
+#include <stdbool.h>
+#include <signal.h>
 
 #define B_RED "\033[1m\033[31m"
 #define RESET "\033[0m"

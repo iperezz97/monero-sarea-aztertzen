@@ -22,22 +22,31 @@ void * hasieratu1003(void *args) {
 		fflush(stdout);
 		pthread_exit(NULL);
 	}
+	time_t denb = time(NULL) + atoi((char *)args);
 	//fprintf(log,"Fitxategia sortuta\n");
 	//fflush(log);
 	while(1) {
-		hautatu_knodoa(root, log); // iteratu zuhaitza errekurtsiboki
+		hautatu_knodoa(root, log, denb); // iteratu zuhaitza errekurtsiboki
 		sleep(1);
-		bzb_inprimatu();
+		//bzb_inprimatu(); // ctrl+c harrapatu eta bzb_inprimatu nagusia.c programan
 	}
+	fflush(log);
 	fclose(log);
+	pthread_exit(NULL);
 }
 
 /* Metodo errekurtsibo honekin PING bidaliko zaion nodoa aukeratuko da (pre-order)
  * Egoera 1 denean exekutatuko da, 1003 komandoa bidaliz (PING) konektatuta jarraitzen duen aztertzeko
  * Ez bada PING erantzuna jasotzen, 2 egoerara pasa nodoa
 */
-void * hautatu_knodoa(struct bzb_ip *un, FILE *log) {
+void * hautatu_knodoa(struct bzb_ip *un, FILE *log, time_t denb) {
 	long err = 0;
+	time_t denb2 = time(NULL);
+	if(denb < denb2) {
+		fprintf(log, "BUKATU\n");
+		fflush(log);
+		pthread_exit(NULL);
+	}
 	if(un == NULL) {
 		//sleep(1);
 		;//continue;
@@ -54,19 +63,21 @@ void * hautatu_knodoa(struct bzb_ip *un, FILE *log) {
 			if(err > 0) {
 				fprintf(log, B_RED"Errorea: %ld\n"RESET, err);
 				fflush(log);
+                                pthread_mutex_lock(&(un->lock));   // blokeakorra (wait-ekin kontrolatu daiteke)
 				if(un->egoe < 3) // ezabatuta ez badago
                                         un->egoe = 2; // ezin nodoarekin konektatu -> mapatik ezabatu
                                 pthread_mutex_unlock(&(un->lock)); // askatu
+				close(s1); // errorea gertatu denean socket-a itxi
 			}
 			//stat = konprobatu_ping(inet_ntoa(une->nodip), une->port, log);
 			//pthread_cond_wait(&(une->cond), &(une->lock)); // signal-aren zain geratzeko
 			//pthread_mutex_unlock(&(une->lock));
 		}
 		if(un->left != NULL) {
-			hautatu_knodoa(un->left, log);
+			hautatu_knodoa(un->left, log, denb);
 		}
 		if(un->right != NULL) {
-			hautatu_knodoa(un->right, log);
+			hautatu_knodoa(un->right, log, denb);
 		}
 	}
 }
@@ -92,7 +103,9 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 
         read_timeout.tv_sec = 1;
         //read_timeout.tv_usec = 500000;
+        int one = 1;
         setsockopt(s1, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+        setsockopt(s1, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &one, sizeof(one));
 
 
 	// Datagram to represent the packet
@@ -151,6 +164,20 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 	memcpy(dat->d, datt, 10); // honela esleitu, bestela 0x00 interpretatzean bukatzen da
 
 	int i;
+
+        // Makina honen socket-aren informazioa zehaztu (portua: 38080)
+        struct sockaddr_in my_addr;
+        my_addr.sin_family = AF_INET;
+        my_addr.sin_addr.s_addr = INADDR_ANY;
+        my_addr.sin_port = htons(38080);
+
+        if (bind(s1, (struct sockaddr*) &my_addr, sizeof(my_addr)) == 0) {
+                fprintf(log,"Portua zehaztuta\t\t");
+        }
+        else {
+                fprintf(log,"Portua socket-era lotu ezin\n");
+                fflush(log);
+        }
 
 	// helburuko nodoari buruzko informazioa bete
 	dest.sin_family = AF_INET;
@@ -227,7 +254,7 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 	long lend1 = strtol(leng1, NULL, 16);
 
 	if(b1 == 33) { // goiburukoa soilik bidali bada
-		b2 = recvfrom(s1, recbuf2, lend1, 0, (struct sockaddr *) &dest, &sizedd);
+		b2 = recvfrom(s1, recbuf2, 38, 0, (struct sockaddr *) &dest, &sizedd);
 		if(b2 <= 0) return (void *) 7;
 	}
 
@@ -249,7 +276,8 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 	fwrite(recbuf1, sizeof(char), b1, em);
 
 	if(b1 == 33){
-		fwrite(recbuf2, sizeof(char), (int)lend1, em);
+//		fwrite(recbuf2, sizeof(char), (int)lend1, em);
+		fwrite(recbuf2, sizeof(char), b2, em);
 	}
 	fflush(stdout);
 

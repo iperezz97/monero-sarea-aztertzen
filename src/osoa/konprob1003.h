@@ -8,6 +8,6 @@ struct data1003 {
 
 // Methods
 void * hasieratu1003(void *args);
-void * hautatu_knodoa(struct bzb_ip *un, FILE *log);
+void * hautatu_knodoa(struct bzb_ip *un, FILE *log, time_t denb);
 void * konprobatu_ping(char *target, int port, FILE *log);
 

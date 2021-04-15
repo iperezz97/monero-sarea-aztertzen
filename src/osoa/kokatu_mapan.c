@@ -22,12 +22,14 @@ void * hasieratu_kokapena(void *args) {
 		printf("Errorea logmap fitxategia sortzean: %s\n", strerror(errno));
 		pthread_exit(NULL);
 	}
-        //fprintf(log,"Fitxategia sortuta\n");
-        //fflush(log);
+
 	while(1) {
 		hautatu_mnodoa(root, log);
 	}
+	fprintf(log, "BUKATU\n");
+	fflush(log);
 	fclose(log);
+	pthread_exit(NULL);
 }
 
 /* Metodo errekurtsibo honekin mapan kokatuko den nodoa aukeratuko da (pre-order)
@@ -43,8 +45,10 @@ void * hautatu_mnodoa(struct bzb_ip *un, FILE *log) {
         }
         else {
                 if(un->egoe == 2) { // ezabatu beharra
-			printf("r %f %f 0 0\n", un->lon, un->lat);
-			fflush(stdout);
+			if(un->lon != 0 || un->lat != 0) { // puntua mapan gehitu ez bada, ez bidali remove eragiketa
+				printf("r %f %f %s 0\n", un->lon, un->lat, inet_ntoa(un->nodip)); // city ez da behar
+				fflush(stdout);
+			}
 			// ez du inork erabiliko nodoa egoera honetan (ez blok.)
 			un->egoe = 3; // mapatik ezabatuta (1001 edo 1003 erantzunik gabe)
 		}
@@ -74,19 +78,10 @@ void * hautatu_mnodoa(struct bzb_ip *un, FILE *log) {
 
 /* Maxmind-en geoip datu-base lokala erabiliz lortuko dira nodo bakoitzaren koordenatuak
  * Pipe-a ireki, komandoa exekutatu, informazio esanguratsua lortu eta pantailan idatzi (pipe-aren bidez irakurri ahal izateko)
- * logmap fitxategian nodoaren hiria zein den idatziko da
+ * logmap fitxategian nodo bakoitzaren informazioa idatziko da
 */
 void * kokatu_mapan(struct bzb_ip *nodo, FILE *log) {
 
-/*	const char* pipeName = "./fifoKanala";       // uneko direktorioan
-	mkfifo(pipeName, 0666);                      // baimenak: irak + idatz. erabilt/talde/beste.-entzat
-	int fd = open(pipeName, O_CREAT | O_WRONLY); // idazteko bakarrik ireki
-	if (fd < 0) {
-		printf("Ezin izan da fifo kanala eraiki.\n");  // errorea
-		exit(0); // thread exit..
-	}
-*/
-	//sleep(2);
 	char *ip = inet_ntoa(nodo->nodip);
 	int port = nodo->port;
 
@@ -94,15 +89,13 @@ void * kokatu_mapan(struct bzb_ip *nodo, FILE *log) {
 	fflush(log);
 
 	float lon, lat;
-	//char *ip = strtok((char *)args, " ");
 	char *city;
 	uneko.s_addr = inet_addr(ip);
 
+	// Koordenatuak atera geoip-rekin
 	sprintf(bufc, "geoiplookup -f ./geoip/maxmind4.dat %s | cut -d ',' -f 5,7-8 | awk -F ',' '{print $3, $2, $1}' | sed s/,//g ", ip); // <longitudea> <latitudea> <hiria>
         fprintf(log, "IP helbideen datuak 'geoip' karpetan deskargatzeko exekutatu 'sh get_maxmind.sh'\nPipe-an exekutatuko den komandoa: %s\n", bufc);
 	fflush(log);
-	// Koordenatuak atera geoip-rekin
-
 	// ireki pipe-a komandoa exekutatzeko
 	FILE *fp;
 
@@ -141,28 +134,24 @@ void * kokatu_mapan(struct bzb_ip *nodo, FILE *log) {
 
 	while (city[ct])
 	{
+		//printf("%s %d",city, (int)new_char);
 		new_char=city[ct];
 		if(new_char == ' ')	city[ct]='_';
-		//putchar(new_char);
+		if(new_char == '\n')	city[ct]='\0';
+
 		ct++;
 	}
-// .... goian gehitu koords
-	//while(egoera_lortu(uneko) != 1) sleep(1);
 
 	// koordenatuak ez dituzte beste hariek erabiltzen, ez blokeatu
 	nodo->lon = lon;
 	nodo->lat = lat;
-	printf("a %f %f %s %s", lon, lat, inet_ntoa(nodo->nodip), city); // eragiketa: add point (mapan)
+	printf("a %f %f %s %s\n", lon, lat, inet_ntoa(nodo->nodip), city); // eragiketa: add point (mapan)
 
-
-	//close(fd);           // itxi deskriptorea (pipe-a)
-	//unlink(pipeName);
-
-        fprintf(log, "Lon: %f\tLat: %f\tCity: %s\n", lon, lat, city);
+        fprintf(log, "Lon: %f\tLat: %f\tCity: %s\n----\n", lon, lat, city);
 	fflush(log);
 	fflush(stdout);
 
 	return (void *) 0;
 
-
 }
+

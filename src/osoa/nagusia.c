@@ -23,7 +23,6 @@ SEED_NODES = https://community.xmr.to/xmr-seed-nodes
 #include "konprob1003.h"
 #include "kokatu_mapan.h"
 
-
 // bzb_ip datu-egitura nagusia hasieratzeko metodoa //
 void init(char *argv1, char *argv2) {
 	root = malloc(sizeof *root);
@@ -39,13 +38,20 @@ void init(char *argv1, char *argv2) {
 
 }
 
+// Bukatzeko seinalea harrapatu eta lortutako nodoen informazioa idatzi 'logbzb' fitxategian //
+void intHandler() {
+	printf("q\n"); // python programa ongi bukatzeko
+	bzb_inprimatu();
+	exit(0);
+}
+
 // main function //
 int main(int argc, char *argv[]) {
 
 	// Argumentuen balidazioa //
-	if(argc != 3 || inet_addr(argv[1]) == -1 || atoi(argv[2]) == 0) {
-		printf(B_RED"Helburuko IP helbidea eta portua beharrezkoak dira exekuzioa hasteko!\n"RESET
-		       "Zerrenda honetatik aukeratu dezakezu: \n"
+	if(argc != 4 || inet_addr(argv[1]) == -1 || atoi(argv[2]) == 0 || atoi(argv[3]) == 0) {
+		printf(B_RED"Helburuko IP helbidea, portua eta eskaeren denbora muga (seg) beharrezkoak dira exekuzioa hasteko!\n"RESET
+		       "Helburuko nodoa ondorengo zerrendatik aukeratu dezakezu: \n"
    		       "  - 66.85.74.134 18080\n"
 	   	       "  - 88.198.163.90 18080\n"
 	               "  - 95.217.25.101 18080\n"
@@ -60,17 +66,20 @@ int main(int argc, char *argv[]) {
 	// Hasieratu datu-egitura nagusia //
 	init(argv[1], argv[2]);
 
+	int denb = atoi(argv[3]);
+	signal(SIGINT, intHandler);
+
 	// Hasieratu mutex-a //
 	if(pthread_mutex_init(&(root->lock), NULL) != 0) {
 		printf("mutex init failed\n");
 		fflush(stdout);
 		exit(1);
 	}
-	if(pthread_cond_init (&(root->cond), NULL) != 0) {
-		printf("cond init failed\n");
-		fflush(stdout);
-		exit(1);
-	}
+//	if(pthread_cond_init (&(root->cond), NULL) != 0) {
+//		printf("cond init failed\n");
+//		fflush(stdout);
+//		exit(1);
+//	}
 
 	// log fitxategia sortu
 	FILE *log;
@@ -83,43 +92,39 @@ int main(int argc, char *argv[]) {
 	char *h_ip = inet_ntoa(root->nodip);
 	fprintf(log, "Jasotako argumentuak: %s %d\r\n", h_ip, root->port);
 
-	// Harien sorrera //
-	char *message1 = (char *)malloc(50);
-	sprintf(message1, "%s", h_ip);
 	char sport[7];
 	sprintf(sport, "%d", root->port);
-	strcat(message1, " ");
-	strcat(message1, sport);
+
+	// Harien sorrera //
+	char *message0 = (char *)malloc(10);
+	sprintf(message0, "%d", denb); // denb seg ondoren bukatu eskaeren exekuzioa
 
 	pthread_t thread1;
 
-	if( pthread_create( &thread1 , NULL , hasieratu1001 , (void*) message1) < 0)
+	if( pthread_create( &thread1 , NULL , hasieratu1001 , (void*) message0) < 0)
 	{
 		fprintf (log, "Ezin izan da thread1 haria sortu. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
 		fflush(log);
 		exit(0);
 	}
 
-	char *message2 = (char *)malloc(50);
-	sprintf(message2, "%s", h_ip);
-	strcat(message2, " ");
-	strcat(message2, sport);
 	pthread_t thread2;
 
-	if( pthread_create( &thread2 , NULL , hasieratu1003 , (void*) message2) < 0)
+	if( pthread_create( &thread2 , NULL , hasieratu1003 , (void*) message0) < 0)
 	{
 		fprintf (log, "Ezin izan da thread2 haria sortu. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
 		fflush(log);
 		exit(0);
 	}
 
-	char *message3 = (char *)malloc(50);
+/*	char *message3 = (char *)malloc(50);
 	sprintf(message3, "%s", h_ip);
 	strcat(message3, " ");
 	strcat(message3, sport);
+*/
 	pthread_t thread3;
 
-	if( pthread_create( &thread3 , NULL , hasieratu_kokapena , (void*) message3) < 0)
+	if( pthread_create( &thread3 , NULL , hasieratu_kokapena , (void*) message0) < 0)
 	{
 		fprintf (log, "Ezin izan da thread3 haria sortu. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
 		fflush(log);
@@ -142,19 +147,20 @@ int main(int argc, char *argv[]) {
 	pthread_join(thread2, NULL);
 	pthread_join(thread3, NULL);
 	pthread_join(thread4, NULL);
-	//fprintf(log, "\n");
+	//printf("q\n"); // python kodeari bukatzea adierazteko
 	//fflush(stdout);
 	bzb_inprimatu(); // logbzb fitxategian idatzi egitura nagusia
-	free(message1);
-	free(message2);
-	free(message3);
+	free(message0);
+	//free(message1);
+	//free(message2);
+	//free(message3);
 	//free(message4);
 	return 0;
 }
 
 
 
-// egiteko
+// egiteko...
 void * jaso_transakzioak(void *args) {
 //	printf("jaso_transakzioak %s exekutatzen...\n", (char *) args);
 	pthread_exit(NULL);
@@ -163,15 +169,16 @@ void * jaso_transakzioak(void *args) {
 
 
 
-/*
- *
+/* Denbora muga zehaztuta saiatu konexioa ezartzen nodoarekin (1001 eta 1003 komandoak bidaltzeko)
+ * Bestela, connect-ekin exekuzioa bertan behera gera daiteke
+ * Ez da select erabiltzen, poll eta fcntl baizik
 */
 int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen, unsigned int timeout_ms) {
         int rc = 0;
         // Set O_NONBLOCK
         int sockfd_flags_before;
-        if((sockfd_flags_before=fcntl(sockfd,F_GETFL,0)<0)) return -1;
-        if(fcntl(sockfd,F_SETFL,sockfd_flags_before | O_NONBLOCK)<0) return -1;
+        if((sockfd_flags_before=fcntl(sockfd,F_GETFL,0)<0)) return -6;
+        if(fcntl(sockfd,F_SETFL,sockfd_flags_before | O_NONBLOCK)<0) return -7;
         // Start connecting (asynchronously)
         do {
                 if (connect(sockfd, addr, addrlen)<0) {

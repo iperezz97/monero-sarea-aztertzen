@@ -10,5 +10,5 @@ struct data {
 
 // Methods
 void * hasieratu1001(void *args);
-void * hautatu_enodoa(struct bzb_ip *un, FILE *log);
+void * hautatu_enodoa(struct bzb_ip *un, FILE *log, time_t denb);
 void * eskatu_ip(char * target, int port, FILE *log);
