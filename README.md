@@ -11,3 +11,7 @@ Proiektua exekutatzeko, kodea direktorioan:
      Exekutatu: 
         
          ./nagusia 212.83.175.67 18080 1 | python kokatu_mapan.py
+
+     Programa nagusia bukatzeko:
+          
+         sh exekuzioa_bukatu.sh
