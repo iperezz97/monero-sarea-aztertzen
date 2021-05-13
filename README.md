@@ -1,6 +1,6 @@
 # monero-sarea-aztertzen
 
-Proiektua exekutatzeko, kodea direktorioan kokatuta:
+Proiektua exekutatzeko, kodea direktorioan:
   - geoip karpeta kokatu edo get_maxmind.sh script-a exekutatu
   - ondorengo komandoak exekutatu:
 
