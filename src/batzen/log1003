@@ -1,6 +1,0 @@
-Creating socket... Destination: 212.83.172.165 18080
-Socket descriptor: 7
-Connected.
-1003 request header sent to: 212.83.172.165	 Packet size: 33 = 21.
-1003 request data sent to:   212.83.172.165	 Packet size: 10 = a.
-1003 response received 				 Packet size: 38 = 26 		 Stored in '212.83.172.165_1003'
