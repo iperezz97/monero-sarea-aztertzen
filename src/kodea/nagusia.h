@@ -31,5 +31,7 @@ struct levhdr {
 void init(char *argv1, char *argv2);
 int connect_with_timeout(int sockfd, const struct sockaddr *addr, socklen_t addrlen, unsigned int timeout_ms);
 
+//egiteko..
+void * jaso_transakzioak(void *);//
 
 

@@ -7,7 +7,7 @@ struct in_addr lort;
 unsigned char combuf[ESIZE];
 unsigned char ler[LSIZE];
 int s;
-struct timeval read_timeout;
+struct timeval read_timeout1;
 
 /* Hasieratu iterazioa zuhaitzaren erroarekin eta egoeraren arabera, 1001 exekutatu edo jarraitu egitura osoa iteratzen behin eta berriro
  * Egoera 0 denean exekutatuko da, 1001 komandoa bidaliz (Handshake request)
@@ -18,19 +18,19 @@ struct timeval read_timeout;
  * Egoera 3: mapatik ezabatu da (egituratik ez)
 */
 void * hasieratu1001(void *args) {
-        // log fitxategia ireki
-        FILE *log;
-        log = fopen("log1001", "w");
-        if(log == NULL) {
-                printf("Errorea log1001 fitxategia sortzean: %s\n", strerror(errno));
-                fflush(stdout);
-                pthread_exit(NULL);
-        }
+    // log fitxategia ireki
+    FILE *log;
+    log = fopen("log1001", "w");
+    if(log == NULL) {
+        printf("Errorea log1001 fitxategia sortzean: %s\n", strerror(errno));
+        fflush(stdout);
+        pthread_exit(NULL);
+    }
 	time_t denb = time(NULL) + atoi((char *)args);
 
-        while(1) {
-                hautatu_enodoa(root, log, denb); // iteratu zuhaitza errekurtsiboki
-        }
+    while(1) {
+        hautatu_enodoa(root, log, denb); // iteratu zuhaitza errekurtsiboki
+    }
 	fflush(log);
 	fclose(log);
 	pthread_exit(NULL);
@@ -47,18 +47,18 @@ void * hautatu_enodoa(struct bzb_ip *un, FILE *log, time_t denb) {
 	time_t denb2 = time(NULL);
 	if(denb < denb2) {
 		fprintf(log, "BUKATU");
-                fflush(log);
-                pthread_exit(NULL);
+        fflush(log);
+        pthread_exit(NULL);
 	}
-        if(un == NULL) {
-                //sleep(1);
-                ;
-        }
-        else {
-                if(un->egoe == 0) {
-                        //pthread_mutex_lock(&(une->lock)); // blokeakorra (wait-ekin kontrolatu daiteke)
-                        //pthread_mutex_trylock(&(une->lock)); // ez blokeakorra
-                        stat = eskatu_ip(inet_ntoa(un->nodip), un->port, log);
+    if(un == NULL) {
+	    //sleep(1);
+	    ;
+    }
+    else {
+        if(un->egoe == 0) {
+	        //pthread_mutex_lock(&(une->lock)); // blokeakorra (wait-ekin kontrolatu daiteke)
+	        //pthread_mutex_trylock(&(une->lock)); // ez blokeakorra
+	        stat = eskatu_ip(inet_ntoa(un->nodip), un->port, log);
 			err = ( long ) stat;
 			if(err > 0) { // erroreren bat gertatu da
 				fprintf(log, B_RED"Errorea: %ld\n"RESET, err);
@@ -78,21 +78,21 @@ void * hautatu_enodoa(struct bzb_ip *un, FILE *log, time_t denb) {
 			}
 			else { // exekuzioa ondo joan da
 				pthread_mutex_lock(&(un->lock));   // blokeakorra (wait-ekin kontrolatu daiteke)
-                                if(un->egoe < 3) { // ezabatuta ez badago
+                if(un->egoe < 3) { // ezabatuta ez badago
 					un->egoe = 1; // lortu dira bere bizilagunak
 				}
 				pthread_mutex_unlock(&(un->lock)); // askatu
 			}
-                        //pthread_cond_wait(&(une->cond), &(une->lock)); // signal-aren zain geratzeko
-                        //pthread_mutex_unlock(&(une->lock));
-                }
-                if(un->left != NULL) {
-                        hautatu_enodoa(un->left, log, denb);
-                }
-                if(un->right != NULL) {
-                        hautatu_enodoa(un->right, log, denb);
-                }
+            //pthread_cond_wait(&(une->cond), &(une->lock)); // signal-aren zain geratzeko
+            //pthread_mutex_unlock(&(une->lock));
         }
+        if(un->left != NULL) {
+                hautatu_enodoa(un->left, log, denb);
+        }
+        if(un->right != NULL) {
+                hautatu_enodoa(un->right, log, denb);
+        }
+    }
 }
 
 /* Levin protokoloaren 1001 komandoa bidaltzeko eta erantzuna jasotzeko metodoa (agian 1007 baztertu bitartean)
@@ -105,62 +105,62 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 	fflush(log);
 
 	// Sortu socket-a
-        s = socket (AF_INET, SOCK_STREAM , IPPROTO_TCP); // s: socket descriptor
-        if(s < 0)
-        {
-                fprintf (log, "Errorea socket-a sortzean. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
+    s = socket (AF_INET, SOCK_STREAM , IPPROTO_TCP); // s: socket descriptor
+    if(s < 0)
+    {
+        fprintf (log, "Errorea socket-a sortzean. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
 		fflush(log);
-                return (void *) 10;
-        }
+        return (void *) 10;
+	}
 	fprintf(log, "Socket deskriptorea: %d\n", s); // desberdinak direla konprobatzeko
 	fflush(log);
 
-	read_timeout.tv_sec = 1;
-	//read_timeout.tv_usec = 500000;
+	read_timeout1.tv_sec = 1;
+	//read_timeout1.tv_usec = 500000;
 	int one = 1;
-	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
+	setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &read_timeout1, sizeof read_timeout1);
 	setsockopt(s, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &one, sizeof(one));
 
 
 	// Datagram to represent the packet
-        unsigned char datagram[329];  // 1001 header bidaltzeko
-        unsigned char datagram1[266]; // 1001 data bidaltzeko
+    unsigned char datagram[329];  // 1001 header bidaltzeko
+    unsigned char datagram1[266]; // 1001 data bidaltzeko
 
 	// Levin header
-        struct levhdr *lvh = (struct levhdr *) (datagram);
+    struct levhdr *lvh = (struct levhdr *) (datagram);
 
-        // Payload
-        struct data *dat = (struct data *) (datagram1);
+    // Payload
+    struct data *dat = (struct data *) (datagram1);
 
 	// Dest addr struct
-        struct sockaddr_in  dest;
+    struct sockaddr_in  dest;
 
 	if(inet_addr(target) == -1) // is not IP
-        {
+    {
 		fprintf(log, "IP desegokia");
-                fflush(log);
-                return (void *) 1;
-        }
+        fflush(log);
+        return (void *) 1;
+    }
 
 	if(port == 0) {
 		fprintf(log, "Portu desegokia");
-                fflush(log);
-                return (void *) 2;
+        fflush(log);
+        return (void *) 2;
 	}
 
-        dest_ip.s_addr = inet_addr( target );
+    dest_ip.s_addr = inet_addr( target );
 
-        memset (datagram, 0, 329);     /* zero out the buffer */
-        memset (datagram1, 0, 266);    /* zero out the buffer */
+    memset (datagram, 0, 329);     /* zero out the buffer */
+    memset (datagram1, 0, 266);    /* zero out the buffer */
 
 	// Fill in the Levin Header (handshake request)
-        lvh->sign = 0x0101010101012101;     // 8 bytes
-        lvh->length = 0xe2;                 // 8 bytes
-        lvh->exp_resp = 0x01;               // 1 byte
-        lvh->comm_cod = htonl(0xe9030000);  // 4 bytes
-        lvh->retn_cod = htonl(0x00000000);  // 4 bytes (+)
-        lvh->reserved = htonl(0x01000000);  // 4 bytes
-        lvh->endchars = htonl(0x01000000);  // 4 bytes
+    lvh->sign = 0x0101010101012101;     // 8 bytes
+    lvh->length = 0xe2;                 // 8 bytes
+    lvh->exp_resp = 0x01;               // 1 byte
+    lvh->comm_cod = htonl(0xe9030000);  // 4 bytes
+    lvh->retn_cod = htonl(0x00000000);  // 4 bytes (+)
+    lvh->reserved = htonl(0x01000000);  // 4 bytes
+    lvh->endchars = htonl(0x01000000);  // 4 bytes
 
 	unsigned char datt[226] = {0x01, 0x11, 0x01, 0x01, 0x01, 0x01, 0x02, 0x01, 0x01, 0x08, 0x09, 0x6e, 0x6f, 0x64, 0x65, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x0c, 0x10, 0x0a, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x05, 0x64, 0x93, 0x16, 0x60, 0x00, 0x00, 0x00, 0x00, 0x07, 0x6d, 0x79, 0x5f, 0x70, 0x6f, 0x72, 0x74, 0x06, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x6e, 0x65, 0x74, 0x77, 0x6f, 0x72, 0x6b, 0x5f, 0x69, 0x64, 0x0a, 0x40, 0x12, 0x30, 0xf1, 0x71, 0x61, 0x04, 0x41, 0x61, 0x17, 0x31, 0x00, 0x82, 0x16, 0xa1, 0xa1, 0x10, 0x07, 0x70, 0x65, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x05, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x0c, 0x70, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x64, 0x61, 0x74, 0x61, 0x0c, 0x10, 0x15, 0x63, 0x75, 0x6d, 0x75, 0x6c, 0x61, 0x74, 0x69, 0x76, 0x65, 0x5f, 0x64, 0x69, 0x66, 0x66, 0x69, 0x63, 0x75, 0x6c, 0x74, 0x79, 0x05, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x68, 0x65, 0x69, 0x67, 0x68, 0x74, 0x05, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x74, 0x6f, 0x70, 0x5f, 0x69, 0x64, 0x0a, 0x80, 0x41, 0x80, 0x15, 0xbb, 0x9a, 0xe9, 0x82, 0xa1, 0x97, 0x5d, 0xa7, 0xd7, 0x92, 0x77, 0xc2, 0x70, 0x57, 0x27, 0xa5, 0x68, 0x94, 0xba, 0x0f, 0xb2, 0x46, 0xad, 0xaa, 0xbb, 0x1f, 0x46, 0x32, 0xe3, 0x0b, 0x74, 0x6f, 0x70, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x08, 0x01};
 
@@ -185,7 +185,7 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 	// helburuko nodoari buruzko informazioa bete
 	dest.sin_family = AF_INET;
 	dest.sin_addr.s_addr = dest_ip.s_addr;
-        dest.sin_port = htons( port );
+	dest.sin_port = htons( port );
 
 	// segundu 1 eman konektatzeko
 	int ko = connect_with_timeout(s, (struct sockaddr *)&dest, sizeof(struct sockaddr), 1000);
@@ -208,31 +208,31 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 	}
 */
 
-        // Send the Levin handshake request header packet
-        int sizesend = sizeof(struct levhdr);
-        if ( sendto (s, datagram, sizeof(struct levhdr) , 0 , (struct sockaddr *) &dest, sizeof (dest)) < 0)
-        {
+    // Send the Levin handshake request header packet
+    int sizesend = sizeof(struct levhdr);
+    if ( sendto (s, datagram, sizeof(struct levhdr) , 0 , (struct sockaddr *) &dest, sizeof (dest)) < 0)
+    {
 		fprintf (log, "Errorea 1001 goiburukoa bidaltzean. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
-           	fflush(log);
+	   	fflush(log);
 		return (void *) 4;
-        }
+    }
 
-        char * m = inet_ntoa(dest.sin_addr);
-        fprintf(log, "1001 eskaeraren goiburukoa bidalita \t\t Pakete tamaina: %d (10),    %x (16).\n", sizesend, sizesend);
+    char * m = inet_ntoa(dest.sin_addr);
+    fprintf(log, "1001 eskaeraren goiburukoa bidalita \t\t Pakete tamaina: %d (10),    %x (16).\n", sizesend, sizesend);
 	fflush(log);
 
-        sizesend = sizeof(struct data);
-        // Send the Levin handshake request data
-        if ( sendto (s, datagram1,  sizeof(struct data) , 0 , (struct sockaddr *) &dest, sizeof (dest)) < 0)
-        {
-                fprintf(log, "Errorea 1001 mezuaren datuak bidaltzean. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
+    sizesend = sizeof(struct data);
+    // Send the Levin handshake request data
+    if ( sendto (s, datagram1,  sizeof(struct data) , 0 , (struct sockaddr *) &dest, sizeof (dest)) < 0)
+    {
+        fprintf(log, "Errorea 1001 mezuaren datuak bidaltzean. Errore zenbakia: %d   Errore mezua: %s \n" , errno , strerror(errno));
 		fflush(log);
 		return (void *) 5;
-        }
+    }
 
-        //m = inet_ntoa(dest.sin_addr);
-        fprintf(log, "1001 eskaeraren datuak bidalita \t\t Pakete tamaina: %d (10),   %x (16).\n", sizesend, sizesend);
-        //printf("==========================================================================\n");
+    //m = inet_ntoa(dest.sin_addr);
+    fprintf(log, "1001 eskaeraren datuak bidalita \t\t Pakete tamaina: %d (10),   %x (16).\n", sizesend, sizesend);
+    //printf("==========================================================================\n");
 	fflush(log);
 
 
@@ -240,11 +240,21 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 	unsigned char *recbuf0 = (unsigned char*)malloc(33); // ignore 1007 request (33+10=43 bytes)
 	unsigned char *recbufi = (unsigned char*)malloc(10); // 1007 data
 	unsigned char *recbufh = (unsigned char*)malloc(33); // 1001 header
+
+	unsigned char *recbufd;
+
 	int sized = sizeof(dest);
 	int b0 = recvfrom(s, recbuf0, 33, 0, (struct sockaddr *) &dest, &sized); // ignore
 
 	char com00[7];
 	long como0 = 0;
+	char com0[7];
+	long como;
+	char com1[7];
+	long comh;
+	char leng[7]; // mezuaren tamaina hamaseitarrez gordetzeko
+	long lend;
+	int zati = 0;
 
 	if(b0 == 8) {
 //		fprintf(log, "\n%s\n\n", recbuh0);
@@ -257,6 +267,11 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 		como0 = strtol(com00, NULL, 16);
 		if (b0 == 25) {
 			b0 = 33;
+			if(como0 == 1001){
+				zati = 1;
+				sprintf(leng, "0x%.2x%.2x", recbuf0[1],recbuf0[0]);
+				lend = strtol(leng, NULL, 16); // bihurtu mezuaren tamaina hamartarrera
+			}
 			fprintf(log, "Lehenik Bender's nightmare sinadura eta ondoren %ld (komando) mezuaren goiburukoa jasota.\n", como0);
 			fflush(log);
 		}
@@ -268,10 +283,10 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 
 	}
 	if (b0 < 33) {
-       		fprintf(log, "Erantzuna 1007 ezin jaso (recvfrom pakete tamaina: %d): %s \n", b0, strerror(errno));
+        fprintf(log, "Erantzuna 1007 ezin jaso (recvfrom pakete tamaina: %d): %s \n", b0, strerror(errno));
 		fflush(log);
 		return (void *) 6;
-       	}
+    }
 
 	char fileizena[50];
 	strcpy(fileizena, target);
@@ -283,21 +298,16 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 		return (void *) 7;
 	}
 
-
-	unsigned char *recbufd;
-	char com0[7];
-	long como;
 	if(como0 == 0) {
 		sprintf(com0, "0x%.2x%.2x", recbuf0[18],recbuf0[17]);
 		como = strtol(com0, NULL, 16);
 	}
-	char leng[7]; // mezuaren tamaina hamaseitarrez gordetzeko
-	long lend;
+
 
 	if(como == 1007 || como0 == 1007) { // support flags mezua
 		char leng0[7];
 		if(como0 == 0) 	sprintf(leng0, "0x%.2x%.2x", recbuf0[9],recbuf0[8]); // jaso tamaina
-		else		sprintf(leng0, "0x%.2x%.2x", recbuf0[1],recbuf0[0]); // jaso tamaina
+		else			sprintf(leng0, "0x%.2x%.2x", recbuf0[1],recbuf0[0]); // jaso tamaina
 		long lend0 = strtol(leng0, NULL, 16); // 1007 datuak 10 byte (lend0)
 		if(recvfrom(s, recbufi, lend0, 0, (struct sockaddr *) &dest, &sized) <= 0) return (void *) 6; // ignore
 		fprintf(log, "1007 eskaera jasota (baztertu) \t\t\t Pakete tamaina: %ld (10),    %02lx (16).\n", lend0, lend0);
@@ -306,17 +316,43 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 		int bh = recvfrom(s, recbufh, 33, 0, (struct sockaddr *) &dest, &sized); // 1001 header
 
 		if (bh <= 0) {
-               		fprintf(log, "Erantzuna 1001 ezin jaso (recvfrom pakete tamaina: %d): %s \n", bh, strerror(errno));
+            fprintf(log, "Erantzuna 1001 ezin jaso (recvfrom pakete tamaina: %d): %s \n", bh, strerror(errno));
 			fflush(log);
 			fclose(em);
 			unlink(fileizena);
 			return (void *) 6;
-        	}
+        }
+        else if(bh == 8) {
+//			fprintf(log, "\n%s\n\n", recbuh0);
+//			fwrite(recbuf0, sizeof(char), 8, log);
+			bh = recvfrom(s, recbufh, 25, 0, (struct sockaddr *) &dest, &sized);
+//			fwrite(recbuf0, sizeof(char), 25, log);
+//			fprintf(log, "TAM:%d\n", b0);
+			fflush(log);
+			sprintf(com1, "0x%.2x%.2x", recbufh[10],recbufh[9]);
+			comh = strtol(com1, NULL, 16);
+			if (bh == 25) {
+				bh = 33; // osorik jaso da header-a
+				fprintf(log, "Lehenik Bender's nightmare sinadura eta ondoren %ld (komando) mezuaren goiburukoa jasota.\n", comh);
+				fflush(log);
+			}
+			else {
+				fprintf(log,"Ez da zuzen jaso 1001 mezuaren goiburukoa\n");
+				fflush(log);
+				return (void *) 6;
+			}
+			sprintf(leng, "0x%.2x%.2x", recbufh[1],recbufh[0]);
+
+
+		}
+		else {
+			fprintf(log, "1001 erantzunaren goiburukoa jasota \t\t Pakete tamaina: %d (10),    %x (16).\n", bh, bh);
+			sprintf(leng, "0x%.2x%.2x", recbufh[9],recbufh[8]);
+
+		}
 
 		// datuen tamaina bihurtu eta espazio hori erreserbatu
-		fprintf(log, "1001 erantzunaren goiburukoa jasota \t\t Pakete tamaina: %d (10),    %x (16).\n", bh, bh);
 
-		sprintf(leng, "0x%.2x%.2x", recbufh[9],recbufh[8]);
 		lend = strtol(leng, NULL, 16); // bihurtu mezuaren tamaina hamartarrera
 		recbufd = (unsigned char*)malloc(lend); // allocate data buffer
 		// header-a fitxategian idatzi
@@ -325,21 +361,27 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 
 	}
 	else if(como == 1001 || como0 == 1001) { // agian zuzenean 1001 jaso da 1007 ordez...
+		if(zati == 1) {
+			fwrite(&lvh->sign, sizeof(char), 8, em);
+			fwrite(recbuf0, sizeof(char), 25, em);
 
-		// datuen tamaina bihurtu eta espazio hori erreserbatu
-		fprintf(log, "1001 erantzunaren goiburukoa jasota \t\t Pakete tamaina: %d (10),    %x (16).\n", b0, b0);
+		}
+		else {
+			// datuen tamaina bihurtu eta espazio hori erreserbatu
+			fprintf(log, "1001 erantzunaren goiburukoa jasota \t\t Pakete tamaina: %d (10),    %x (16).\n", b0, b0);
 
-		sprintf(leng, "0x%.2x%.2x", recbuf0[9],recbuf0[8]);
-		lend = strtol(leng, NULL, 16); // bihurtu mezuaren tamaina hamartarrera
+			sprintf(leng, "0x%.2x%.2x", recbuf0[9],recbuf0[8]);
+			lend = strtol(leng, NULL, 16); // bihurtu mezuaren tamaina hamartarrera
+			// header-a fitxategian idatzi
+			fwrite(recbuf0, sizeof(char), 33, em);
+		}
 		recbufd = (unsigned char*)malloc(lend); // allocate data buffer
-		// header-a fitxategian idatzi
-		fwrite(recbuf0, sizeof(char), 33, em);
 
 
 	}
 	else { // besterik jaso bada baztertu
 		if(como0 != 0)	fprintf(log, "Baztertutako mezua: %ld\n", como0);
-		else 		fprintf(log, "Baztertutako mezua: %ld\n", como);
+		else 			fprintf(log, "Baztertutako mezua: %ld\n", como);
 		fflush(log);
 		fclose(em);
 		unlink(fileizena);
@@ -369,7 +411,7 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 		}
 		lend-=bd; // jasotzeko falta diren byteak kontrolatu
 
-        }
+    }
 	fflush(log);
 
 	close(s); // socket-a itxi
@@ -384,31 +426,31 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 	//fflush(stdout);
 
 	// exekutatu komandoa
-        // ireki pipe-a komandoa exekutatzeko
-        FILE *pp1;
+    // ireki pipe-a komandoa exekutatzeko
+    FILE *pp1;
 
-        if ((pp1 = popen(combuf, "r")) == NULL) {
-                fprintf(log, "Errorea pipe1 irekitzean.\n");
-                fflush(log);
+    if ((pp1 = popen(combuf, "r")) == NULL) {
+        fprintf(log, "Errorea pipe1 irekitzean.\n");
+        fflush(log);
 		fclose(em);
 		unlink(fileizena);
-                return (void *) 11;
-        }
+        return (void *) 11;
+    }
 
-        //fprintf(log, "Pipe1 ongi ireki da.\n");
-        //fflush(log);
+    //fprintf(log, "Pipe1 ongi ireki da.\n");
+    //fflush(log);
 
-        while(fgets(ler, LSIZE, pp1) != NULL) {
-                ;//fwrite();
-        }
+    while(fgets(ler, LSIZE, pp1) != NULL) {
+        ;//fwrite();
+    }
 
-        if(pclose(pp1))  {
-                fprintf(log, "Komando ezezaguna edo pipe1 ustekabean itxi da.\n");
-                fflush(log);
+    if(pclose(pp1))  {
+        fprintf(log, "Komando ezezaguna edo pipe1 ustekabean itxi da.\n");
+        fflush(log);
 		fclose(em);
 		unlink(fileizena);
-                return (void *) 12;
-        }
+        return (void *) 12;
+    }
 
 	// berdina IPv6 (mapped IPv4) ateratzeko fitx berean
 	sprintf(combuf, "hexdump -C %s", fileizena);
@@ -420,28 +462,28 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 	// exekutatu komandoa
 
 	FILE *pp2;
-        if ((pp2 = popen(combuf, "r")) == NULL) {
-                fprintf(log, "Errorea pipe2 irekitzean.\n");
-                fflush(log);
+    if ((pp2 = popen(combuf, "r")) == NULL) {
+        fprintf(log, "Errorea pipe2 irekitzean.\n");
+        fflush(log);
 		fclose(em);
 		unlink(fileizena);
-                return (void *) 11;
-        }
+        return (void *) 11;
+    }
 
-        //fprintf(log, "Pipe2 ongi ireki da.\n");
-        //fflush(log);
+    //fprintf(log, "Pipe2 ongi ireki da.\n");
+    //fflush(log);
 
-        while(fgets(ler, LSIZE, pp2) != NULL) {
-                ;//fwrite();
-        }
+    while(fgets(ler, LSIZE, pp2) != NULL) {
+        ;//fwrite();
+    }
 
-        if(pclose(pp2))  {
-                fprintf(log, "Komando ezezaguna edo pipe2 ustekabean itxi da.\n");
-                fflush(log);
+	if(pclose(pp2))  {
+        fprintf(log, "Komando ezezaguna edo pipe2 ustekabean itxi da.\n");
+        fflush(log);
 		fclose(em);
 		unlink(fileizena);
-                return (void *) 12;
-        }
+        return (void *) 12;
+    }
 
 	// irakurri komandoarekin idatzi berri den fitxategia
 	FILE *fi;
@@ -488,15 +530,15 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 			}
 
 			// aurkitu portua lerroan
-                        if(hasip = strstr(line, patt1)) {
-                                hasip += strlen(patt1);
+            if(hasip = strstr(line, patt1)) {
+                hasip += strlen(patt1);
 				bukap = hasip;
 				bukap += strlen(patt1)*3;
-                                aurkport = (char *)malloc(bukap - hasip + 1);
-                                memcpy(aurkport, hasip, bukap-hasip);
-                                aurkport[bukap-hasip] = '\0';
+                aurkport = (char *)malloc(bukap - hasip + 1);
+                memcpy(aurkport, hasip, bukap-hasip);
+                aurkport[bukap-hasip] = '\0';
 
-                        }
+	        }
 
 			sprintf(iphx[0], "0x%c%c\n", aurkip[1], aurkip[2]);
 			sprintf(iphx[1], "0x%c%c\n", aurkip[4], aurkip[5]);
@@ -509,9 +551,9 @@ void * eskatu_ip(char * target, int port, FILE *log) {
 			//fflush(stdout);
 
 			lort.s_addr = inet_addr(ipch);
-                        //printf("Port: %ld", por);
+            //printf("Port: %ld", por);
 
-                        txertatu_elem(lort, por);
+            txertatu_elem(lort, por);
 
 		}
 		iter++;

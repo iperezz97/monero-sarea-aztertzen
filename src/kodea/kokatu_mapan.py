@@ -348,7 +348,7 @@ for it in items:
     file.write(str(it.coord)+": ")
     file.write(it.cit+" { ")
     for tr in it.tkop:
-        file.write(tr+",   ")
+        file.write(tr+"   ")
 #    file.write('   '.join(it.tkop))
     file.write("}")
     file.write("\n")

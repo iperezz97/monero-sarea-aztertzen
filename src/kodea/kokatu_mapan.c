@@ -41,12 +41,12 @@ void * hasieratu_kokapena(void *args) {
 void * hautatu_mnodoa(struct bzb_ip *un, FILE *log) {
 	long err = 0;
 	int nodokop;
-        if(un == NULL) {
-                //sleep(1);
-                ;
-        }
-        else {
-                if(un->egoe == 2) { // ezabatu beharra
+    if(un == NULL) {
+        //sleep(1);
+        ;
+    }
+    else {
+        if(un->egoe == 2) { // ezabatu beharra
 			// ez du inork erabiliko nodoa egoera honetan (ez blokeatu)
 			if(un->lon != 0 || un->lat != 0) { // puntua mapan gehitu ez bada, ez bidali remove eragiketa
 				printf("r %f %f %s 0\n", un->lon, un->lat, inet_ntoa(un->nodip)); // city ez da behar
@@ -58,10 +58,10 @@ void * hautatu_mnodoa(struct bzb_ip *un, FILE *log) {
 			pthread_mutex_unlock(&(un->lock)); // askatu
 		}
 		else if(un->lon == 0 && un->lat == 0 && un->egoe != 3) {
-                        //pthread_mutex_lock(&(un->lock)); // blokeakorra (wait-ekin kontrolatu daiteke)
-                        //pthread_mutex_trylock(&(un->lock)); // ez blokeakorra
-                        err = ( long ) kokatu_mapan(un, log);
-                        if(err > 0) { // ez da ohikoa
+            //pthread_mutex_lock(&(un->lock)); // blokeakorra (wait-ekin kontrolatu daiteke)
+            //pthread_mutex_trylock(&(un->lock)); // ez blokeakorra
+            err = ( long ) kokatu_mapan(un, log);
+            if(err > 0) { // ez da ohikoa
 				nodomap--;
 				fprintf(log, B_RED"Errorea: %ld\n"RESET, err);
 				fflush(log);
@@ -72,9 +72,9 @@ void * hautatu_mnodoa(struct bzb_ip *un, FILE *log) {
 			else {
 				nodomap++;
 			}
-                        //pthread_cond_wait(&(un->cond), &(un->lock)); // signal-aren zain geratzeko
-                        //pthread_mutex_unlock(&(un->lock));
-                }
+            //pthread_cond_wait(&(un->cond), &(un->lock)); // signal-aren zain geratzeko
+            //pthread_mutex_unlock(&(un->lock));
+        }
 		char tmp[1024];
 		FILE *es = fopen("log1001", "r"); // 1. hariaren fitxategia irakurtzeko ireki
 		if(es != NULL) {
@@ -94,13 +94,13 @@ void * hautatu_mnodoa(struct bzb_ip *un, FILE *log) {
 			fclose(es);
 		}
 
-                if(un->left != NULL) {
-                        hautatu_mnodoa(un->left, log);
-                }
-                if(un->right != NULL) {
-                        hautatu_mnodoa(un->right, log);
-                }
+        if(un->left != NULL) {
+                hautatu_mnodoa(un->left, log);
         }
+        if(un->right != NULL) {
+                hautatu_mnodoa(un->right, log);
+        }
+    }
 }
 
 
@@ -113,7 +113,7 @@ void * kokatu_mapan(struct bzb_ip *nodo, FILE *log) {
 	char *ip = inet_ntoa(nodo->nodip);
 	int port = nodo->port;
 
-        fprintf(log, "Koordenatuak lortzen... Helburuko nodoa: %s %d\n", ip, port);
+    fprintf(log, "Koordenatuak lortzen... Helburuko nodoa: %s %d\n", ip, port);
 	fflush(log);
 
 	float lon, lat;
@@ -122,7 +122,7 @@ void * kokatu_mapan(struct bzb_ip *nodo, FILE *log) {
 
 	// Koordenatuak atera geoip-rekin
 	sprintf(bufc, "geoiplookup -f ./geoip/maxmind4.dat %s | cut -d ',' -f 5,7-8 | awk -F ',' '{print $3, $2, $1}' | sed s/,//g ", ip); // <longitudea> <latitudea> <hiria>
-        fprintf(log, "IP helbideen datuak 'geoip' karpetan deskargatzeko exekutatu 'sh get_maxmind.sh'\nPipe-an exekutatuko den komandoa: %s\n", bufc);
+    fprintf(log, "IP helbideen datuak 'geoip' karpetan deskargatzeko exekutatu 'sh get_maxmind.sh'\nPipe-an exekutatuko den komandoa: %s\n", bufc);
 	fflush(log);
 	// ireki pipe-a komandoa exekutatzeko
 	FILE *fp;
@@ -133,7 +133,7 @@ void * kokatu_mapan(struct bzb_ip *nodo, FILE *log) {
 		return (void *) 1;
 	}
 
-        fprintf(log, "Pipe-a ongi ireki da.\n");
+    fprintf(log, "Pipe-a ongi ireki da.\n");
 	fflush(log);
 
 	while (fgets(coords, CSIZE, fp) != NULL) {
@@ -176,7 +176,7 @@ void * kokatu_mapan(struct bzb_ip *nodo, FILE *log) {
 	printf("a %f %f %s %s\n", lon, lat, inet_ntoa(nodo->nodip), city); // eragiketa: add point (mapan)
 	fflush(stdout);
 
-        fprintf(log, "Lon: %f\tLat: %f\tCity: %s\n----\n", lon, lat, city);
+    fprintf(log, "Lon: %f\tLat: %f\tCity: %s\n----\n", lon, lat, city);
 	fflush(log);
 
 	return (void *) 0;

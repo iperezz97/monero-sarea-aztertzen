@@ -4,7 +4,7 @@
 
 struct in_addr dest_ip;
 int s1;
-struct timeval read_timeout;
+struct timeval read_timeout2;
 
 /* Hasieratu iterazioa zuhaitzaren erroarekin eta egoeraren arabera, 1003 exekutatu edo jarraitu egitura osoa iteratzen behin eta berriro
  * Ez du hasteko argumenturik behar, zuhaitza baizik... 1001 exekutatua izana (bestela 1001-en erantzuna [recvfrom] 0 da - konexioa itxi da...)
@@ -63,11 +63,11 @@ void * hautatu_knodoa(struct bzb_ip *un, FILE *log, time_t denb) {
 			if(err > 0) {
 				fprintf(log, B_RED"Errorea: %ld\n"RESET, err);
 				fflush(log);
-                                pthread_mutex_lock(&(un->lock));   // blokeakorra (wait-ekin kontrolatu daiteke)
+                pthread_mutex_lock(&(un->lock));   // blokeakorra (wait-ekin kontrolatu daiteke)
 				if(un->egoe < 3) // ezabatuta ez badago
-                                        un->egoe = 2; // ezin nodoarekin konektatu -> mapatik ezabatu
-                                pthread_mutex_unlock(&(un->lock)); // askatu
-				close(s1); // errorea gertatu denean socket-a itxi
+                    un->egoe = 2; // ezin nodoarekin konektatu -> mapatik ezabatu
+                    pthread_mutex_unlock(&(un->lock)); // askatu
+					close(s1); // errorea gertatu denean socket-a itxi
 			}
 			//stat = konprobatu_ping(inet_ntoa(une->nodip), une->port, log);
 			//pthread_cond_wait(&(une->cond), &(une->lock)); // signal-aren zain geratzeko
@@ -91,42 +91,42 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 	fprintf(log, "\nSocket-a sortzen... \tHelburuko nodoa: %s %d\n", target, port);
 	fflush(log);
 	// Create a raw socket to send
-        s1 = socket (AF_INET, SOCK_STREAM , IPPROTO_TCP); // s: socket descriptor
-        if(s1 < 0)
-        {
-                fprintf(log, "Errorea socket-a sortzean. Errore zenbakia: %d  Errore mezua: %s \n" , errno , strerror(errno));
+    s1 = socket (AF_INET, SOCK_STREAM , IPPROTO_TCP); // s: socket descriptor
+    if(s1 < 0)
+    {
+        fprintf(log, "Errorea socket-a sortzean. Errore zenbakia: %d  Errore mezua: %s \n" , errno , strerror(errno));
 		fflush(log);
 		return (void *) 1;
-        }
+    }
 	fprintf(log, "Socket deskriptorea: %d\n", s1); // egiaztatu desberdinak direla..
-        fflush(log);
+    fflush(log);
 
-        read_timeout.tv_sec = 1;
-        //read_timeout.tv_usec = 500000;
-        int one = 1;
-        setsockopt(s1, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
-        setsockopt(s1, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &one, sizeof(one));
+    read_timeout2.tv_sec = 1;
+    //read_timeout2.tv_usec = 500000;
+    int one = 1;
+    setsockopt(s1, SOL_SOCKET, SO_RCVTIMEO, &read_timeout2, sizeof read_timeout2);
+    setsockopt(s1, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &one, sizeof(one));
 
 
 	// Datagram to represent the packet
-        unsigned char datagram[329];  // 1003 header bidaltzeko
-        unsigned char datagram1[50];  // 1003 data bidaltzeko
+    unsigned char datagram[329];  // 1003 header bidaltzeko
+    unsigned char datagram1[50];  // 1003 data bidaltzeko
 
 	// Levin header
-        struct levhdr *lvh = (struct levhdr *) (datagram);
+    struct levhdr *lvh = (struct levhdr *) (datagram);
 
-        // Payload
-        struct data1003 *dat = (struct data1003 *) (datagram1);
+    // Payload
+    struct data1003 *dat = (struct data1003 *) (datagram1);
 
 	// Dest addr struct
-        struct sockaddr_in  dest;
+    struct sockaddr_in  dest;
 
 	if(inet_addr(target) == -1) // is not IP
-        {
+    {
 		fprintf(log, "IP desegokia");
 		fflush(log);
 		return (void *) 2;
-        }
+    }
 
 	if(port == 0) {
 		fprintf(log, "Portu desegokia");
@@ -147,17 +147,17 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 	}
 	pthread_mutex_unlock(&(root->lock));
 */
-        memset (datagram, 0, 329);     /* zero out the buffer */
-        memset (datagram1, 0, 266);    /* zero out the buffer */
+    memset (datagram, 0, 329);     /* zero out the buffer */
+    memset (datagram1, 0, 266);    /* zero out the buffer */
 
 	// Fill in the Levin Header (PING request)
-        lvh->sign = 0x0101010101012101;     // 8 bytes
-        lvh->length = 0x0a;                 // 8 bytes
-        lvh->exp_resp = 0x01;               // 1 byte request
-        lvh->comm_cod = htonl(0xeb030000);  // 4 bytes
-        lvh->retn_cod = htonl(0x01000000);  // 4 bytes (request!!! DOKU+)
-        lvh->reserved = htonl(0x01000000);  // 4 bytes
-        lvh->endchars = htonl(0x01000000);  // 4 bytes
+    lvh->sign = 0x0101010101012101;     // 8 bytes
+    lvh->length = 0x0a;                 // 8 bytes
+    lvh->exp_resp = 0x01;               // 1 byte request
+    lvh->comm_cod = htonl(0xeb030000);  // 4 bytes
+    lvh->retn_cod = htonl(0x01000000);  // 4 bytes (request!!! DOKU+)
+    lvh->reserved = htonl(0x01000000);  // 4 bytes
+    lvh->endchars = htonl(0x01000000);  // 4 bytes
 
 	// Levin Data/Payload
 	unsigned char datt[10] = {0x01, 0x11, 0x01, 0x01, 0x01, 0x01, 0x02, 0x01, 0x01, 0x00};
@@ -165,24 +165,24 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 
 	int i;
 
-        // Makina honen socket-aren informazioa zehaztu (portua: 38080)
-        struct sockaddr_in my_addr;
-        my_addr.sin_family = AF_INET;
-        my_addr.sin_addr.s_addr = INADDR_ANY;
-        my_addr.sin_port = htons(38080);
+    // Makina honen socket-aren informazioa zehaztu (portua: 38080)
+    struct sockaddr_in my_addr;
+    my_addr.sin_family = AF_INET;
+    my_addr.sin_addr.s_addr = INADDR_ANY;
+    my_addr.sin_port = htons(38080);
 
-        if (bind(s1, (struct sockaddr*) &my_addr, sizeof(my_addr)) == 0) {
-                fprintf(log,"Portua zehaztuta\t\t");
-        }
-        else {
-                fprintf(log,"Portua socket-era lotu ezin\n");
-                fflush(log);
-        }
+    if (bind(s1, (struct sockaddr*) &my_addr, sizeof(my_addr)) == 0) {
+            fprintf(log,"Portua zehaztuta\t\t");
+    }
+    else {
+            fprintf(log,"Portua socket-era lotu ezin\n");
+            fflush(log);
+    }
 
 	// helburuko nodoari buruzko informazioa bete
 	dest.sin_family = AF_INET;
 	dest.sin_addr.s_addr = dest_ip.s_addr;
-        dest.sin_port = htons( port );
+    dest.sin_port = htons( port );
 
 /*	// 3-way handshake (SYN-ACK)
 	if(connect(s1, (struct sockaddr *)&dest, sizeof(struct sockaddr)) < 0){
@@ -193,29 +193,29 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 	}
 */
 	// segundu 1 eman konektatzeko
-        int kod = connect_with_timeout(s1, (struct sockaddr *)&dest, sizeof(struct sockaddr), 1000);
+    int kod = connect_with_timeout(s1, (struct sockaddr *)&dest, sizeof(struct sockaddr), 1000);
 
-        if(kod >= 0){
-                fprintf(log, "Ongi konektatu da: %d\n", kod);
-                fflush(log);
-        }
-        else {
-                fprintf(log, "Ezin konektatu: %d\n", kod);
-                fflush(log);
-                return (void *) 3;
-        }
+    if(kod >= 0){
+        fprintf(log, "Ongi konektatu da: %d\n", kod);
+        fflush(log);
+    }
+    else {
+        fprintf(log, "Ezin konektatu: %d\n", kod);
+        fflush(log);
+        return (void *) 3;
+    }
 
-        // Send the Levin PING (1003) request header packet
-        int sizesend = sizeof(struct levhdr);
-        if ( sendto (s1, datagram, sizeof(struct levhdr) , 0 , (struct sockaddr *) &dest, sizeof (dest)) < 0)
-        {
+    // Send the Levin PING (1003) request header packet
+    int sizesend = sizeof(struct levhdr);
+    if ( sendto (s1, datagram, sizeof(struct levhdr) , 0 , (struct sockaddr *) &dest, sizeof (dest)) < 0)
+    {
 		fprintf (log, "Errorea 1003 goiburukoa bidaltzean. Errore zenbakia: %d  Errore mezua: %s \n" , errno , strerror(errno));
-        	fflush(log);
+    	fflush(log);
 		return (void *) 5;
-        }
+    }
 
-        char * m = inet_ntoa(dest.sin_addr);
-        fprintf(log, "1003 eskaeraren goiburukoa bidalita\t\t Pakete tamaina: %d (10), %02x (16).\n", sizesend, sizesend);
+    char * m = inet_ntoa(dest.sin_addr);
+    fprintf(log, "1003 eskaeraren goiburukoa bidalita\t\t Pakete tamaina: %d (10), %02x (16).\n", sizesend, sizesend);
 	fflush(log);
 
 	sizesend = sizeof(struct data1003);
@@ -244,10 +244,10 @@ void * konprobatu_ping(char *target, int port, FILE *log) {
 	int b2;
 
 	if (b1 <= 0) {
-                fprintf(log, "Erantzuna ezin jaso (recvfrom tamaina %d): %s \n", b1, strerror(errno));
+        fprintf(log, "Erantzuna ezin jaso (recvfrom tamaina %d): %s \n", b1, strerror(errno));
 		fflush(log);
 		return (void *) 7;
-        }
+    }
 
 	char leng1[7];
 	sprintf(leng1, "0x%.2x%.2x", recbuf1[9],recbuf1[8]);
